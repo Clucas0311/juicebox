@@ -8,7 +8,20 @@ const createInitialUsers = async () => {
       username: "albert",
       password: "bertie99",
     });
+
+    const sandra = await createUser({
+      username: "sandra",
+      password: "2sandyme",
+    });
+
+    const glamgal = await createUser({
+      username: "glamgal",
+      password: "soglam",
+    });
+
     console.log("albert:", albert);
+    console.log("sandra:", sandra);
+    console.log("glamgal", glamgal);
 
     console.log("Finished creating users!");
   } catch (error) {
@@ -25,7 +38,7 @@ const droptables = async () => {
         DROP TABLE IF EXISTS users;
     `);
 
-    console.log("Finshed dropping tables!");
+    console.log("Finished dropping tables!");
   } catch (error) {
     console.error("Error dropping tables!");
     throw error;
