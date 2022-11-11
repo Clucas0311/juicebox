@@ -7,16 +7,22 @@ const createInitialUsers = async () => {
     await createUser({
       username: "albert",
       password: "bertie99",
+      name: "Al Bert",
+      location: "Sidney, Australia",
     });
 
     await createUser({
       username: "sandra",
       password: "2sandyme",
+      name: "Just Sandra",
+      location: "Ain't Tellin'",
     });
 
     await createUser({
       username: "glamgal",
       password: "soglam",
+      name: "Joshua",
+      location: "Upper East Side",
     });
 
     console.log("Finished creating users!");
@@ -49,7 +55,10 @@ const createTables = async () => {
         CREATE TABLE users(
             id SERIAL PRIMARY KEY,
             username VARCHAR(255) UNIQUE NOT NULL,
-            password VARCHAR(255) NOT NULL
+            password VARCHAR(255) NOT NULL,
+            name VARCHAR(255) NOT NULL,
+            location VARCHAR(255) NOT NULL,
+            active BOOLEAN DEFAULT true
         );
     `);
 
