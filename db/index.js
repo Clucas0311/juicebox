@@ -51,10 +51,13 @@ const getUserById = async (userId) => {
   try {
     const {
       rows: [user],
-    } = await client.query(`
+    } = await client.query(
+      `
       SELECT * FROM users
-      WHERE id = ${userId}
-    `);
+      WHERE id = $1
+    `,
+      [userId]
+    );
     if (!user) return null;
 
     user.posts = await getPostsByUser(userId);
@@ -102,13 +105,13 @@ const createPost = async ({ authorId, title, content }) => {
   }
 };
 
-const updateUser = async (id, fields = {}) => {
+const updateUser = async (userId, fields = {}) => {
   // This is taking the field keys and storing them to a value $1 each
   // Storing each key to the placeholder to prevent SQL Injection
   // "username"= $1 password = $2
 
   const setString = Object.keys(fields)
-    .map((key, index) => `"${key}"=$${index + 1}`)
+    .map((key, index) => `"${key}"=$${index + 2}`)
     .join(", ");
 
   console.log("setString", setString);
@@ -121,10 +124,10 @@ const updateUser = async (id, fields = {}) => {
       `
     UPDATE users
     SET ${setString}
-    WHERE id=${id}
+    WHERE id= $1
     RETURNING *;
    `,
-      Object.values(fields)
+      [userId, ...Object.values(fields)]
     );
     return user;
   } catch (error) {
@@ -132,9 +135,9 @@ const updateUser = async (id, fields = {}) => {
   }
 };
 
-const updatePost = async (id, fields = {}) => {
+const updatePost = async (postId, fields = {}) => {
   const setString = Object.keys(fields).map(
-    (key, index) => `"${key}"=$${index + 1}`
+    (key, index) => `"${key}"=$${index + 2}`
   );
   try {
     const {
@@ -143,10 +146,10 @@ const updatePost = async (id, fields = {}) => {
       `
       UPDATE posts
       SET ${setString}
-      WHERE id=${id}
+      WHERE id = $1
       RETURNING *;
     `,
-      Object.values(fields)
+      [postId, ...Object.values(fields)]
     );
     return post;
   } catch (error) {
