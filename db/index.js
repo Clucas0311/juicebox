@@ -13,7 +13,9 @@ const getAllUsers = async () => {
 
 const createUser = async ({ username, password, name, location }) => {
   try {
-    const { rows } = await client.query(
+    const {
+      rows: [user],
+    } = await client.query(
       `
             INSERT INTO users(username, password, name, location) 
             VALUES($1, $2, $3, $4)
@@ -22,14 +24,17 @@ const createUser = async ({ username, password, name, location }) => {
         `,
       [username, password, name, location]
     );
-    return rows[0];
+    return user;
   } catch (error) {
     throw error;
   }
 };
 
 const updateUser = async (id, fields = {}) => {
-  // This is taking the field keys and storing them to a value $1 etch
+  // This is taking the field keys and storing them to a value $1 each
+  // Storing each key to the placeholder to prevent SQL Injection
+  // "username"= $1 password = $2
+
   const setString = Object.keys(fields)
     .map((key, index) => `"${key}"=$${index + 1}`)
     .join(", ");
