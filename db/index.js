@@ -4,11 +4,65 @@ const { Client } = require("pg"); // imports the pg module so we can use pg
 const client = new Client("postgres://localhost:5432/juicebox-dev");
 
 const getAllUsers = async () => {
-  const { rows } = await client.query(`
-        SELECT id, username, name, location, active
-        FROM users;
+  try {
+    const { rows } = await client.query(`
+          SELECT id, username, name, location, active
+          FROM users;
+      `);
+    return rows;
+  } catch (error) {
+    console.log("There was an error getting all the users");
+    throw error;
+  }
+};
+
+const getAllPosts = async () => {
+  try {
+    const { rows } = await client.query(`
+      SELECT * 
+      FROM posts;
     `);
-  return rows;
+
+    return rows;
+  } catch (error) {
+    console.log("There was an error getting all posts!");
+    throw error;
+  }
+};
+
+const getPostsByUser = async (userId) => {
+  try {
+    const { rows } = await client.query(
+      `
+      SELECT * 
+      FROM posts
+      WHERE "authorId" = $1;
+    `,
+      [userId]
+    );
+
+    return rows;
+  } catch (error) {
+    console.log("There was an error getting posts from user");
+  }
+};
+
+const getUserById = async (userId) => {
+  try {
+    const {
+      rows: [user],
+    } = await client.query(`
+      SELECT * FROM users
+      WHERE id = ${userId}
+    `);
+    if (!user) return null;
+
+    user.posts = await getPostsByUser(userId);
+    return user;
+  } catch (error) {
+    console.log("There was an error getting user by id");
+    throw error;
+  }
 };
 
 const createUser = async ({ username, password, name, location }) => {
@@ -25,6 +79,24 @@ const createUser = async ({ username, password, name, location }) => {
       [username, password, name, location]
     );
     return user;
+  } catch (error) {
+    console.log("There was an error, creating user");
+    throw error;
+  }
+};
+
+const createPost = async ({ authorId, title, content }) => {
+  try {
+    const {
+      rows: [post],
+    } = await client.query(
+      `
+      INSERT INTO posts("authorId", title, content)
+      VALUES ($1, $2, $3)
+    `,
+      [authorId, title, content]
+    );
+    return post;
   } catch (error) {
     throw error;
   }
@@ -60,9 +132,36 @@ const updateUser = async (id, fields = {}) => {
   }
 };
 
+const updatePost = async (id, fields = {}) => {
+  const setString = Object.keys(fields).map(
+    (key, index) => `"${key}"=$${index + 1}`
+  );
+  try {
+    const {
+      rows: [post],
+    } = await client.query(
+      `
+      UPDATE posts
+      SET ${setString}
+      WHERE id=${id}
+      RETURNING *;
+    `,
+      Object.values(fields)
+    );
+    return post;
+  } catch (error) {
+    throw error;
+  }
+};
+
 module.exports = {
   client,
   getAllUsers,
+  getAllPosts,
+  getPostsByUser,
+  getUserById,
   createUser,
+  createPost,
   updateUser,
+  updatePost,
 };
