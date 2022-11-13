@@ -35,6 +35,12 @@ const createInitialUsers = async () => {
 const droptables = async () => {
   try {
     console.log("Starting to drop tables...");
+    // We drop posts first because has a foreign key to users
+    // If we drop users first we get a constraint error b/c posts foreign key depends on users primary key
+    // user can have many posts
+    await client.query(`
+      DROP TABLE IF EXISTS posts;
+    `);
 
     await client.query(`
         DROP TABLE IF EXISTS users;
@@ -59,6 +65,16 @@ const createTables = async () => {
             name VARCHAR(255) NOT NULL,
             location VARCHAR(255) NOT NULL,
             active BOOLEAN DEFAULT true
+        );
+    `);
+
+    await client.query(`
+        CREATE TABLE posts(
+          id SERIAL PRIMARY KEY,
+          "authorId" INTEGER REFERENCES users(id) NOT NULL,
+          title VARCHAR(255) NOT NULL,
+          content TEXT NOT NULL,
+          active BOOLEAN DEFAULT true
         );
     `);
 
