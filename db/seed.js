@@ -57,15 +57,13 @@ const createInitialPosts = async () => {
     });
     await createPost({
       authorId: sandra.id,
-      title: "First Post",
-      content:
-        "This is my first post. I hope I love writing blogs as much as I love writing them.",
+      title: "How does this work?",
+      content: "Seriously, does this even do anything?",
     });
     await createPost({
       authorId: glamgal.id,
-      title: "First Post",
-      content:
-        "This is my first post. I hope I love writing blogs as much as I love writing them.",
+      title: "Living the Glam Life",
+      content: "Do you even? I swear that half of you are posing.",
     });
   } catch (error) {
     console.log("There was an error creating initial posts");

@@ -18,12 +18,17 @@ const getAllUsers = async () => {
 
 const getAllPosts = async () => {
   try {
-    const { rows } = await client.query(`
+    const { rows: postIds } = await client.query(`
       SELECT * 
       FROM posts;
     `);
 
-    return rows;
+    // We want all posts to have tags and authors
+    const posts = await Promise.all(
+      postIds.map((post) => getPostById(post.id))
+    );
+    console.log("posts in fet all posts", posts);
+    return posts;
   } catch (error) {
     console.log("There was an error getting all posts!");
     throw error;
@@ -32,7 +37,7 @@ const getAllPosts = async () => {
 
 const getPostsByUser = async (userId) => {
   try {
-    const { rows } = await client.query(
+    const { rows: postIds } = await client.query(
       `
       SELECT * 
       FROM posts
@@ -40,8 +45,12 @@ const getPostsByUser = async (userId) => {
     `,
       [userId]
     );
-
-    return rows;
+    // Updates all posts with have the author and tags on it
+    const posts = await Promise.all(
+      postIds.map((post) => getPostById(post.id))
+    );
+    console.log("posts", posts);
+    return posts;
   } catch (error) {
     console.log("There was an error getting posts from user");
   }
