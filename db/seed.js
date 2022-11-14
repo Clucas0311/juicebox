@@ -3,11 +3,15 @@ const {
   getAllUsers,
   createUser,
   createPost,
+  createTags,
+  createPostTag,
   updateUser,
   getAllPosts,
+  getPostById,
   getPostsByUser,
   getUserById,
   updatePost,
+  addTagsToPost,
 } = require("./index");
 
 const createInitialUsers = async () => {
@@ -69,14 +73,48 @@ const createInitialPosts = async () => {
   }
 };
 
+const createInitialTags = async () => {
+  try {
+    console.log("Starting to create tags...");
+
+    const [happy, sad, inspo, catman] = await createTags([
+      "#happy",
+      "#worst-day-ever",
+      "#youcandoanything",
+      "#catmandoeverything",
+    ]);
+
+    const [postOne, postTwo, postThree] = await getAllPosts();
+
+    await addTagsToPost(postOne.id, [happy, inspo]);
+    await addTagsToPost(postTwo.id, [sad, inspo]);
+    await addTagsToPost(postThree.id, [happy, catman, inspo]);
+    console.log("postOne", postOne);
+    console.log("postTwo", postTwo);
+    console.log("postTwo", postTwo);
+    console.log("Finished creating tags!");
+  } catch (error) {
+    console.log("Error creating tags!");
+    throw error;
+  }
+};
+
 const droptables = async () => {
   try {
     console.log("Starting to drop tables...");
     // We drop posts first because has a foreign key to users
     // If we drop users first we get a constraint error b/c posts foreign key depends on users primary key
     // user can have many posts
+
+    await client.query(`
+      DROP TABLE IF EXISTS post_tags
+    `);
     await client.query(`
       DROP TABLE IF EXISTS posts;
+    `);
+
+    await client.query(`
+      DROP TABLE IF EXISTS tags
     `);
 
     await client.query(`
@@ -115,6 +153,21 @@ const createTables = async () => {
         );
     `);
 
+    await client.query(`
+          CREATE TABLE tags(
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(255) UNIQUE NOT NULL
+          );
+    `);
+
+    await client.query(`
+            CREATE TABLE post_tags(
+              "postId" INTEGER REFERENCES posts(id),
+              "tagId" INTEGER REFERENCES tags(id),
+              UNIQUE ("postId", "tagId")
+            );
+    `);
+
     console.log("Finished building tables!");
   } catch (error) {
     console.error("Error building tables!");
@@ -130,6 +183,7 @@ const rebuildDB = async () => {
     await createTables();
     await createInitialUsers();
     await createInitialPosts();
+    await createInitialTags();
   } catch (error) {
     console.error(error);
     throw error;
@@ -164,6 +218,14 @@ const testDB = async () => {
     console.log("Calling getUserById with 1");
     const albert = await getUserById(1);
     console.log("Result:", albert);
+
+    console.log("Calling getPostsByUser with 1");
+    const postTwo = await getPostsByUser(2);
+    console.log("Result", postTwo);
+
+    console.log("Calling getPostById with 1");
+    const postOne = await getPostById(1);
+    console.log("Result", postOne);
 
     console.log("Finished database tests!");
   } catch (error) {
