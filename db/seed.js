@@ -65,7 +65,7 @@ const createInitialPosts = async () => {
       authorId: glamgal.id,
       title: "Living the Glam Life",
       content: "Do you even? I swear that half of you are posing.",
-      tags: ["#happy", "#youcandoanything", "#canmandoeverything"],
+      // tags: ["#happy", "#youcandoanything", "#canmandoeverything"],
     });
   } catch (error) {
     console.log("There was an error creating initial posts");
@@ -109,14 +109,13 @@ const droptables = async () => {
     await client.query(`
       DROP TABLE IF EXISTS post_tags
     `);
+
+    await client.query(`
+    DROP TABLE IF EXISTS tags
+  `);
     await client.query(`
       DROP TABLE IF EXISTS posts;
     `);
-
-    await client.query(`
-      DROP TABLE IF EXISTS tags
-    `);
-
     await client.query(`
         DROP TABLE IF EXISTS users;
     `);
