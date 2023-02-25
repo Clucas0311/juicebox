@@ -68,7 +68,7 @@ const getUserById = async (userId) => {
       [userId]
     );
     if (!user) return null;
-
+    delete user.password;
     user.posts = await getPostsByUser(userId);
     return user;
   } catch (error) {
